@@ -16,22 +16,18 @@ public class Player : MonoBehaviour
     private float _timeFromLastShot = 0;
     public static Player _player;
 
-    public Vector3 Position
-    {
-        get { return transform.position; }
-    }
     private void Awake()
     {
         _player = this;
         _currentHealth = _maxHealth;
         _bulletPool = new ObjectPool<GameObject>(
-            createFunc: () => Instantiate(_bulletPrefab),
+            createFunc: () => CreateBullet(),
             actionOnGet: (bullet) => GetBullet(bullet),
-            actionOnRelease: (bullet) => bullet.SetActive(false),
+            actionOnRelease: (bullet) => ReturnBullet(bullet),
             actionOnDestroy: (bullet) => Destroy(bullet),
             collectionCheck: false,
-            defaultCapacity: 10,
-            maxSize: 10
+            defaultCapacity: 5,
+            maxSize: 5
             );
     }
     private void Update()
@@ -74,11 +70,17 @@ public class Player : MonoBehaviour
     private void GetBullet(GameObject bullet)
     {
         bullet.SetActive(true);
+        bullet.transform.position = transform.position;
     }
     private GameObject CreateBullet()
     {
         GameObject bullet = Instantiate(_bulletPrefab);
         bullet.GetComponent<Bullet>().BulletPool = _bulletPool;
+        bullet.transform.SetParent(transform);
         return bullet;
+    }
+    private void ReturnBullet(GameObject bullet)
+    {
+        bullet.SetActive(false);
     }
 }

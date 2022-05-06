@@ -4,58 +4,75 @@ using UnityEngine;
 using System;
 using UnityEngine.Pool;
 
-public abstract class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
-    [SerializeField] protected float _speed;
-    [SerializeField] protected int _damage;
-    [SerializeField] protected int _maxHealth;
-    protected ObjectPool<GameObject> _pool;
-    protected EnemyFactory _factory;
-    protected EnemyMovement _movement;
-    protected EnemyHit _hit;
-    protected int _currentHealth;
-    public Action OnDied;
+    [SerializeField] private EnemyData _data;
+    private int _currentHealth;
+    private Vector3 _position;
+    private Player _player;
+    private ObjectPool<GameObject> _pool;
+    public IEnemyDirectionSetter _directionSetter;
 
-    protected void Awake()
+    public Player player
     {
-        _currentHealth = _maxHealth;
+        set { _player = value; }
     }
-    protected void Die()
+    public ObjectPool<GameObject> pool
     {
-        OnDied?.Invoke();
-        _pool.Release(this.gameObject);
+        set { _pool = value; }
     }
-    protected void ApplyDamage(int damage)
+    public void StateUpdate()
     {
-        if (damage >= _currentHealth)
-        {
-            _currentHealth = 0;
-            Die();
-        }
-        else
-        {
-            _currentHealth -= damage;
-        }
+        _currentHealth = _data._maxHealth;
+        _position = transform.position;
     }
-    protected void OnCollisionEnter2D(Collision2D collision)
+    private void Awake()
     {
+        _position = transform.position;
+        StateUpdate();
+        _directionSetter = new CubeDirectionSetter();
+    }
+    private void Update()
+    {
+        Move();
+    }
+    private void Move()
+    {
+        Vector3 direction = _directionSetter.GetDirection(_position, _player.transform.position);
+        _position += direction * _data._speed * Time.deltaTime;
+        transform.position = _position;
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Player player = collision.gameObject.GetComponent<Player>();
         Bullet bullet = collision.gameObject.GetComponent<Bullet>();
         if (bullet != null)
         {
             ApplyDamage(bullet.Damage);
-            bullet.Die();
+            if (bullet.gameObject.activeInHierarchy)
+            {
+                bullet.BulletPool.Release(bullet.gameObject);
+            }
         }
-        else if (collision.gameObject.GetComponent<Player>() != null)
+        else if(player != null)
         {
-            _hit.Hit(_damage);
+            player.ApplyDamage(_data._damage);
             Die();
         }
     }
-    public ObjectPool<GameObject> pool
+    private void ApplyDamage(int damage)
     {
-        set
+        if (damage < _currentHealth)
         {
-            _pool = value;
+            _currentHealth -= damage;
         }
+        else
+        {
+            Die();
+        }
+    }
+    private void Die()
+    {
+        _pool.Release(gameObject);
     }
 }
