@@ -6,41 +6,63 @@ using UnityEngine.Pool;
 
 public class Enemy : MonoBehaviour
 {
-    [SerializeField] private EnemyData _data;
     private int _currentHealth;
+    private int _score;
+    private float _timeFromLastShot = 0f;
     private Vector3 _position;
     private Player _player;
-    private ObjectPool<GameObject> _pool;
-    public IEnemyDirectionSetter _directionSetter;
+    private ObjectPool<GameObject> _enemyPool;
+    private ObjectPool<GameObject> _enemyBulletPool;
+    private AudioSource _enemyShotSound;
+    private EnemyMoveData _moveData;
+    private EnemyHitData _hitData;
+    private IEnemyDirectionSetter _directionSetter;
+    private IEnemyHitSetter _hitSetter;
 
-    public Player player
+    public Player player{ set { _player = value; }}
+    public ObjectPool<GameObject> enemyPool{set { _enemyPool = value; }}
+    public ObjectPool<GameObject> bulletPool{set { _enemyBulletPool = value; }}
+    public EnemyHitData hitData{set { _hitData = value; }}
+    public EnemyMoveData moveData{set { _moveData = value; }}
+    public AudioSource enemyShotSound{set {_enemyShotSound = value; }}
+    public IEnemyDirectionSetter directionSetter{set {_directionSetter = value;}}
+    public IEnemyHitSetter hitSetter{set {_hitSetter = value;}}
+
+    public void StateUpdate(Vector2 position)
     {
-        set { _player = value; }
-    }
-    public ObjectPool<GameObject> pool
-    {
-        set { _pool = value; }
-    }
-    public void StateUpdate()
-    {
-        _currentHealth = _data._maxHealth;
-        _position = transform.position;
+        _currentHealth = _moveData._maxHealth;
+        _position = position;
+        transform.position = position;
+        CalculateScore();
     }
     private void Awake()
     {
         _position = transform.position;
-        StateUpdate();
-        _directionSetter = new CubeDirectionSetter();
     }
     private void Update()
     {
         Move();
+        Hit();
     }
     private void Move()
     {
         Vector3 direction = _directionSetter.GetDirection(_position, _player.transform.position);
-        _position += direction * _data._speed * Time.deltaTime;
+        direction = Vector3.ClampMagnitude(direction, 1);
+        _position += direction * _moveData._speed * Time.deltaTime;
         transform.position = _position;
+    }
+    private void Hit()
+    {
+        if (_timeFromLastShot >= _hitData._shotDelay && _hitData._shotDelay > 0f)
+        {
+            _hitSetter.Hit(_enemyBulletPool, transform.position, _hitData);
+            _timeFromLastShot = 0f;
+            _enemyShotSound.Play();
+        }
+        else
+        {
+            _timeFromLastShot += Time.deltaTime;
+        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -56,7 +78,7 @@ public class Enemy : MonoBehaviour
         }
         else if(player != null)
         {
-            player.ApplyDamage(_data._damage);
+            EventManager.SendPlayerDamageApplied(_hitData._collisionDamage);
             Die();
         }
     }
@@ -73,6 +95,11 @@ public class Enemy : MonoBehaviour
     }
     private void Die()
     {
-        _pool.Release(gameObject);
+        _enemyPool.Release(gameObject);
+        EventManager.SendEnemyDied(_score);
+    }
+    private void CalculateScore()
+    {
+        _score = _hitData._hitScore + _moveData._moveScore;
     }
 }

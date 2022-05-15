@@ -7,40 +7,28 @@ public class Player : MonoBehaviour
 {
     [SerializeField] private float _speed;
     [SerializeField] private float _bulletSpeed;
-    [SerializeField] private float _shotDelay;
     [SerializeField] private int _maxHealth;
     [SerializeField] private int _bulletDamage;
-    [SerializeField] private GameObject _bulletPrefab;
-    private ObjectPool<GameObject> _bulletPool;
+    [SerializeField] private BulletPool _bulletPool;
+    [SerializeField] private AudioSource _shotSound;
+    private ObjectPool<GameObject> _playerBulletPool;
     private float _currentHealth;
-    private float _timeFromLastShot = 0;
-    public static Player _player;
 
     private void Awake()
     {
-        _player = this;
         _currentHealth = _maxHealth;
-        _bulletPool = new ObjectPool<GameObject>(
-            createFunc: () => CreateBullet(),
-            actionOnGet: (bullet) => GetBullet(bullet),
-            actionOnRelease: (bullet) => ReturnBullet(bullet),
-            actionOnDestroy: (bullet) => Destroy(bullet),
-            collectionCheck: false,
-            defaultCapacity: 5,
-            maxSize: 5
-            );
+       // _shotSound = GetComponent<AudioSource>();
+        //EventManager.OnPlayerHealthChanged.AddListener(ApplyDamage);
+    }
+    private void Start()
+    {
+        _playerBulletPool = _bulletPool.playerBulletPool;
+        EventManager.OnPlayerHealthChanged.AddListener(ApplyDamage);
     }
     private void Update()
     {
-        _timeFromLastShot += Time.deltaTime;
         Move();
-        if (Input.GetKey(KeyCode.Mouse0) && _shotDelay <= _timeFromLastShot)
-        {
-            _timeFromLastShot = 0f;
-            Vector3 click = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2 direction = new Vector2(click.x - transform.position.x, click.y - transform.position.y);
-            Shoot(direction);
-        }
+        Shot();
     }
     private void Move()
     {
@@ -51,36 +39,38 @@ public class Player : MonoBehaviour
     }
     public void ApplyDamage(int damage)
     {
-        if (_currentHealth < damage)
+        if (_currentHealth <= damage)
         {
             _currentHealth = 0;
+            EventManager.SendGameEnded();
         }
         else
         {
             _currentHealth -= damage;
         }
-        Debug.Log($"Вам нанесли {damage} урона");
-        Debug.Log($"_currentHealth = {_currentHealth}");
     }
-    private void Shoot(Vector2 direction)
+    private void Shot()
     {
-        GameObject bullet = _bulletPool.Get();
-        bullet.GetComponent<Bullet>().StateUpdate(direction, _bulletSpeed, transform.position, _bulletDamage);   
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 clickPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 direction = new Vector2(clickPosition.x - transform.position.x, clickPosition.y - transform.position.y);
+            direction = Vector2.ClampMagnitude(direction, 1);
+            if (_playerBulletPool != null)
+            {
+                _shotSound.Play();
+                GameObject bullet = _playerBulletPool.Get();
+                bullet.GetComponent<Bullet>().StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage); 
+            }
+        }
     }
-    private void GetBullet(GameObject bullet)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        bullet.SetActive(true);
-        bullet.transform.position = transform.position;
-    }
-    private GameObject CreateBullet()
-    {
-        GameObject bullet = Instantiate(_bulletPrefab);
-        bullet.GetComponent<Bullet>().BulletPool = _bulletPool;
-        bullet.transform.SetParent(transform);
-        return bullet;
-    }
-    private void ReturnBullet(GameObject bullet)
-    {
-        bullet.SetActive(false);
+        Bullet _bullet = collision.gameObject.GetComponent<Bullet>();
+        if (_bullet != null)
+        {
+            EventManager.SendPlayerDamageApplied(_bullet.Damage);
+            _bullet.BulletPool.Release(_bullet.gameObject);
+        }
     }
 }
