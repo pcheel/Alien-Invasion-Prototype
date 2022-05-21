@@ -9,18 +9,10 @@ public class Bullet : MonoBehaviour
     private float _speed;
     private Vector2 _position;
     private Vector2 _direction;
-    private ObjectPool<GameObject> _pool;
     private const float LIMIT_POSITION = 40F;
+    public ObjectPool<Bullet> bulletPool;
 
-    public int Damage
-    {
-        get { return _damage; }
-    }
-    public ObjectPool<GameObject> BulletPool  //???
-    {
-        set { _pool = value; }
-        get { return _pool; }
-    }
+    public int damage => _damage;
     public void StateUpdate(Vector2 direction, Vector2 position, float speed, int damage)
     {
         _speed = speed;
@@ -33,7 +25,7 @@ public class Bullet : MonoBehaviour
     {
         if (Mathf.Abs(_position.x) > LIMIT_POSITION || Mathf.Abs(_position.y) > LIMIT_POSITION)
         {
-            _pool.Release(gameObject);
+            bulletPool.Release(this);
             return;
         }
         Move();

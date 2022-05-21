@@ -7,21 +7,15 @@ public class BulletPool : MonoBehaviour
 {
     [SerializeField] private GameObject _playerBulletPrefab;
     [SerializeField] private GameObject _enemyBulletPrefab;
-    private ObjectPool<GameObject> _playerBulletPool;
-    private ObjectPool<GameObject> _enemyBulletPool;
+    private ObjectPool<Bullet> _playerBulletPool;
+    private ObjectPool<Bullet> _enemyBulletPool;
      
-    public ObjectPool<GameObject> playerBulletPool
-    {
-        get { return _playerBulletPool; }
-    }
-    public ObjectPool<GameObject> enemyBulletPool
-    {
-        get { return _enemyBulletPool; }
-    }
+    public ObjectPool<Bullet> playerBulletPool => _playerBulletPool;
+    public ObjectPool<Bullet> enemyBulletPool => _enemyBulletPool;
 
     private void Awake()
     {
-        _playerBulletPool = new ObjectPool<GameObject>(
+        _playerBulletPool = new ObjectPool<Bullet>(
             createFunc: () => CreatePlayerBullet(),
             actionOnGet: (bullet) => GetBullet(bullet),
             actionOnRelease: (bullet) => ReturnBullet(bullet),
@@ -30,7 +24,7 @@ public class BulletPool : MonoBehaviour
             defaultCapacity: 7,
             maxSize: 7
             );
-        _enemyBulletPool = new ObjectPool<GameObject>(
+        _enemyBulletPool = new ObjectPool<Bullet>(
             createFunc: () => CreateEnemyBullet(),
             actionOnGet: (bullet) => GetBullet(bullet),
             actionOnRelease: (bullet) => ReturnBullet(bullet),
@@ -40,27 +34,29 @@ public class BulletPool : MonoBehaviour
             maxSize: 15
             );
     }
-    private GameObject CreatePlayerBullet()
+    private Bullet CreatePlayerBullet()
     {
-        GameObject bullet = Instantiate(_playerBulletPrefab);
-        bullet.GetComponent<Bullet>().BulletPool = _playerBulletPool;
-        bullet.transform.SetParent(transform);
+        GameObject bulletGO = Instantiate(_playerBulletPrefab);
+        Bullet bullet = bulletGO.GetComponent<Bullet>();
+        bullet.bulletPool = _playerBulletPool;
+        bulletGO.transform.SetParent(transform);
         return bullet;
     }
-    private GameObject CreateEnemyBullet()
+    private Bullet CreateEnemyBullet()
     {
-        GameObject bullet = Instantiate(_enemyBulletPrefab);
-        bullet.GetComponent<Bullet>().BulletPool = _enemyBulletPool;
-        bullet.transform.SetParent(transform);
+        GameObject bulletGO = Instantiate(_enemyBulletPrefab);
+        Bullet bullet = bulletGO.GetComponent<Bullet>();
+        bullet.bulletPool = _enemyBulletPool;
+        bulletGO.transform.SetParent(transform);
         return bullet;
     }
-    private void GetBullet(GameObject bullet)
+    private void GetBullet(Bullet bullet)
     {
         bullet.transform.position = transform.position;
-        bullet.SetActive(true);
+        bullet.gameObject.SetActive(true);
     }
-    private void ReturnBullet(GameObject bullet)
+    private void ReturnBullet(Bullet bullet)
     {
-        bullet.SetActive(false);
+        bullet.gameObject.SetActive(false);
     }
 }

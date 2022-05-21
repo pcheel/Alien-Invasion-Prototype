@@ -11,14 +11,25 @@ public class Player : MonoBehaviour
     [SerializeField] private int _bulletDamage;
     [SerializeField] private BulletPool _bulletPool;
     [SerializeField] private AudioSource _shotSound;
-    private ObjectPool<GameObject> _playerBulletPool;
+    private ObjectPool<Bullet> _playerBulletPool;
     private float _currentHealth;
 
+    public int maxHealth => _maxHealth;
+    public void ApplyDamage(int damage)
+    {
+        if (_currentHealth <= damage)
+        {
+            _currentHealth = 0;
+            EventManager.SendGameEnded();
+        }
+        else
+        {
+            _currentHealth -= damage;
+        }
+    }
     private void Awake()
     {
         _currentHealth = _maxHealth;
-       // _shotSound = GetComponent<AudioSource>();
-        //EventManager.OnPlayerHealthChanged.AddListener(ApplyDamage);
     }
     private void Start()
     {
@@ -37,18 +48,6 @@ public class Player : MonoBehaviour
         Vector3 direction = Vector3.ClampMagnitude(new Vector3(directionX, directionY, 0f), 1f);
         transform.position += direction * _speed * Time.deltaTime;
     }
-    public void ApplyDamage(int damage)
-    {
-        if (_currentHealth <= damage)
-        {
-            _currentHealth = 0;
-            EventManager.SendGameEnded();
-        }
-        else
-        {
-            _currentHealth -= damage;
-        }
-    }
     private void Shot()
     {
         if (Input.GetMouseButtonDown(0))
@@ -59,8 +58,9 @@ public class Player : MonoBehaviour
             if (_playerBulletPool != null)
             {
                 _shotSound.Play();
-                GameObject bullet = _playerBulletPool.Get();
-                bullet.GetComponent<Bullet>().StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage); 
+                Bullet bullet = _playerBulletPool.Get();
+                bullet.StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage);
+                //bullet.GetComponent<Bullet>().StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage); 
             }
         }
     }
@@ -69,8 +69,8 @@ public class Player : MonoBehaviour
         Bullet _bullet = collision.gameObject.GetComponent<Bullet>();
         if (_bullet != null)
         {
-            EventManager.SendPlayerDamageApplied(_bullet.Damage);
-            _bullet.BulletPool.Release(_bullet.gameObject);
+            EventManager.SendPlayerDamageApplied(_bullet.damage);
+            _bullet.bulletPool.Release(_bullet);
         }
     }
 }

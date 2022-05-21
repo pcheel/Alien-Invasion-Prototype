@@ -432,6 +432,7 @@ MonoBehaviour:
   _maxHealth: 100
   _bulletDamage: 5
   _bulletPool: {fileID: 1422919507}
+  _shotSound: {fileID: 1201409419}
 --- !u!70 &272936993
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -1441,7 +1442,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxEnemy: 5
-  _spawnTime: 2
+  _spawnTime: 1.5
   _spawnRange: 5
   _enemyPrefab: {fileID: 1658997047562053772, guid: 31c855061e58efd41bce08c9cb7b94c2, type: 3}
   _player: {fileID: 272936991}

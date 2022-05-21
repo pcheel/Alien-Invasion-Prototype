@@ -20,8 +20,8 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private EnemyMoveData[] _moveData;
     [SerializeField] private EnemyHitData[] _hitData;
 
-    private ObjectPool<GameObject> _enemyBulletPool;
-    private ObjectPool<GameObject> _enemyPool;
+    private ObjectPool<Bullet> _enemyBulletPool;
+    private ObjectPool<Enemy> _enemyPool;
     private float _timeFromLastSpawn = 0;
     private int _enemyCounter = 0;
     private Dictionary<int, Func<IEnemyDirectionSetter>> _enemyFormSpawnActions;
@@ -40,7 +40,7 @@ public class EnemySpawner : MonoBehaviour
             {0, () => RedSpawn() },
             {1, () => YellowSpawn() }
         };
-        _enemyPool = new ObjectPool<GameObject>(
+        _enemyPool = new ObjectPool<Enemy>(
             createFunc: () => CreateEnemy(),
             actionOnGet: (enemy) => GetEnemy(enemy),
             actionOnRelease: (enemy) => ReturnEnemy(enemy),
@@ -63,7 +63,7 @@ public class EnemySpawner : MonoBehaviour
     {
         if (_enemyCounter < _maxEnemy && _timeFromLastSpawn >= _spawnTime)
         {
-            GameObject enemy = _enemyPool.Get();
+            Enemy enemy = _enemyPool.Get();
             _enemyCounter++;
             _timeFromLastSpawn = 0;
         }
@@ -72,7 +72,7 @@ public class EnemySpawner : MonoBehaviour
             _timeFromLastSpawn += Time.deltaTime;
         }
     }
-    private GameObject CreateEnemy()
+    private Enemy CreateEnemy()
     {
         GameObject enemyGO = Instantiate(_enemyPrefab, RandomizeSpawnPoint());
         enemyGO.transform.SetParent(transform);
@@ -81,25 +81,25 @@ public class EnemySpawner : MonoBehaviour
         enemy.enemyPool = _enemyPool;
         enemy.bulletPool = _enemyBulletPool;
         enemy.enemyShotSound = _enemyShotSound;
-        return enemyGO;
+        return enemy;
     }
-    private void GetEnemy(GameObject enemy)
+    private void GetEnemy(Enemy enemy)
     {
         RandomizeEnemy(enemy);
         Transform spawnTransform = RandomizeSpawnPoint();
         float spawnPositionX = spawnTransform.position.x + UnityEngine.Random.Range(0f, _spawnRange);
         float spawnPositionY = spawnTransform.position.y + UnityEngine.Random.Range(0f, _spawnRange);
-        enemy.GetComponent<Enemy>().StateUpdate(new Vector2(spawnPositionX, spawnPositionY));
-        enemy.SetActive(true);
+        enemy.StateUpdate(new Vector2(spawnPositionX, spawnPositionY));
+        enemy.gameObject.SetActive(true);
     }
-    private void ReturnEnemy(GameObject enemy)
+    private void ReturnEnemy(Enemy enemy)
     {
-        enemy.SetActive(false);
+        enemy.gameObject.SetActive(false);
         _enemyCounter--;
     }
-    private void RandomizeEnemy(GameObject enemyGO)
+    private void RandomizeEnemy(Enemy enemy)
     {
-        Enemy enemy = enemyGO.GetComponent<Enemy>();
+        //Enemy enemy = enemyGO.GetComponent<Enemy>();
         int formNumber = UnityEngine.Random.Range(0, _enemyFormSpawnActions.Count);
         int colorNumber = UnityEngine.Random.Range(0, _enemyColorSpawnActions.Count);
         enemy.directionSetter = _enemyFormSpawnActions[formNumber]?.Invoke();

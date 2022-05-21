@@ -11,22 +11,22 @@ public class Enemy : MonoBehaviour
     private float _timeFromLastShot = 0f;
     private Vector3 _position;
     private Player _player;
-    private ObjectPool<GameObject> _enemyPool;
-    private ObjectPool<GameObject> _enemyBulletPool;
+    private ObjectPool<Enemy> _enemyPool;
+    private ObjectPool<Bullet> _enemyBulletPool;
     private AudioSource _enemyShotSound;
     private EnemyMoveData _moveData;
     private EnemyHitData _hitData;
     private IEnemyDirectionSetter _directionSetter;
     private IEnemyHitSetter _hitSetter;
 
-    public Player player{ set { _player = value; }}
-    public ObjectPool<GameObject> enemyPool{set { _enemyPool = value; }}
-    public ObjectPool<GameObject> bulletPool{set { _enemyBulletPool = value; }}
-    public EnemyHitData hitData{set { _hitData = value; }}
-    public EnemyMoveData moveData{set { _moveData = value; }}
-    public AudioSource enemyShotSound{set {_enemyShotSound = value; }}
-    public IEnemyDirectionSetter directionSetter{set {_directionSetter = value;}}
-    public IEnemyHitSetter hitSetter{set {_hitSetter = value;}}
+    public Player player { set => _player = value;}
+    public AudioSource enemyShotSound { set => _enemyShotSound = value;}
+    public ObjectPool<Enemy> enemyPool{set => _enemyPool = value; }
+    public ObjectPool<Bullet> bulletPool{set => _enemyBulletPool = value; }
+    public EnemyHitData hitData{set => _hitData = value; }
+    public EnemyMoveData moveData{set => _moveData = value; }
+    public IEnemyDirectionSetter directionSetter{set => _directionSetter = value;}
+    public IEnemyHitSetter hitSetter{set => _hitSetter = value;}
 
     public void StateUpdate(Vector2 position)
     {
@@ -70,10 +70,10 @@ public class Enemy : MonoBehaviour
         Bullet bullet = collision.gameObject.GetComponent<Bullet>();
         if (bullet != null)
         {
-            ApplyDamage(bullet.Damage);
+            ApplyDamage(bullet.damage);
             if (bullet.gameObject.activeInHierarchy)
             {
-                bullet.BulletPool.Release(bullet.gameObject);
+                bullet.bulletPool.Release(bullet);
             }
         }
         else if(player != null)
@@ -95,7 +95,7 @@ public class Enemy : MonoBehaviour
     }
     private void Die()
     {
-        _enemyPool.Release(gameObject);
+        _enemyPool.Release(this);
         EventManager.SendEnemyDied(_score);
     }
     private void CalculateScore()

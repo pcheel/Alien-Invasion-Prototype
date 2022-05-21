@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class HealthBar : MonoBehaviour
 {
-    [SerializeField] private int _maxPlayerHealth;
+    [SerializeField] private Player _player;
     private Image _image;
 
     private void Awake()
@@ -15,6 +15,6 @@ public class HealthBar : MonoBehaviour
     }
     public void ChangeHealthBar(int damage)
     {
-        _image.fillAmount -= (float)damage/_maxPlayerHealth;
+        _image.fillAmount -= (float)damage/_player.maxHealth;
     }
 }
