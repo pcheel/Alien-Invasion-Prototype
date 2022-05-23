@@ -2,58 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
-using System;
 
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private int _maxEnemy;
     [SerializeField] private float _spawnTime;
     [SerializeField] private float _spawnRange;
-    [SerializeField] private GameObject _enemyPrefab;
-    [SerializeField] private Player _player;
-    [SerializeField] private BulletPool _bulletPool;
     [SerializeField] private AudioSource _enemyDiedSound;
-    [SerializeField] private AudioSource _enemyShotSound;
     [SerializeField] private GameObject[] _spawnPoint;
-    [SerializeField] private Color[] _enemyColors;
-    [SerializeField] private Sprite[] _enemySprites;
-    [SerializeField] private EnemyMoveData[] _moveData;
-    [SerializeField] private EnemyHitData[] _hitData;
 
-    private ObjectPool<Bullet> _enemyBulletPool;
     private ObjectPool<Enemy> _enemyPool;
     private float _timeFromLastSpawn = 0;
     private int _enemyCounter = 0;
-    private Dictionary<int, Func<IEnemyDirectionSetter>> _enemyFormSpawnActions;
-    private Dictionary<int, Func<IEnemyHitSetter>> _enemyColorSpawnActions;
 
-    private void Awake()
+    public void RelocateEnemy(Enemy enemy)
     {
-        _enemyFormSpawnActions = new Dictionary<int, Func<IEnemyDirectionSetter>>()
-        {
-            {0, () => CubeSpawn() },
-            {1, () => RhombusSpawn() },
-            {2, () => TriangleSpawn() }
-        };
-        _enemyColorSpawnActions = new Dictionary<int, Func<IEnemyHitSetter>>()
-        {
-            {0, () => RedSpawn() },
-            {1, () => YellowSpawn() }
-        };
-        _enemyPool = new ObjectPool<Enemy>(
-            createFunc: () => CreateEnemy(),
-            actionOnGet: (enemy) => GetEnemy(enemy),
-            actionOnRelease: (enemy) => ReturnEnemy(enemy),
-            actionOnDestroy: (enemy) => Destroy(enemy),
-            collectionCheck: false,
-            defaultCapacity: 10,
-            maxSize: 10
-        );
+        Transform spawnTransform = RandomizeSpawnPoint();
+        float spawnPositionX = spawnTransform.position.x + UnityEngine.Random.Range(0f, _spawnRange);
+        float spawnPositionY = spawnTransform.position.y + UnityEngine.Random.Range(0f, _spawnRange);
+        enemy.StateUpdate(new Vector2(spawnPositionX, spawnPositionY));
     }
     private void Start()
     {
-        _enemyBulletPool = _bulletPool.enemyBulletPool;
         EventManager.OnEnemyDied.AddListener(() => _enemyDiedSound.Play());
+        EventManager.OnEnemyDied.AddListener(() => _enemyCounter--);
+        _enemyPool = GetComponent<EnemyPool>().enemyPool;
     }
     private void Update()
     {
@@ -72,66 +45,9 @@ public class EnemySpawner : MonoBehaviour
             _timeFromLastSpawn += Time.deltaTime;
         }
     }
-    private Enemy CreateEnemy()
-    {
-        GameObject enemyGO = Instantiate(_enemyPrefab, RandomizeSpawnPoint());
-        enemyGO.transform.SetParent(transform);
-        Enemy enemy = enemyGO.GetComponent<Enemy>();
-        enemy.player = _player;
-        enemy.enemyPool = _enemyPool;
-        enemy.bulletPool = _enemyBulletPool;
-        enemy.enemyShotSound = _enemyShotSound;
-        return enemy;
-    }
-    private void GetEnemy(Enemy enemy)
-    {
-        RandomizeEnemy(enemy);
-        Transform spawnTransform = RandomizeSpawnPoint();
-        float spawnPositionX = spawnTransform.position.x + UnityEngine.Random.Range(0f, _spawnRange);
-        float spawnPositionY = spawnTransform.position.y + UnityEngine.Random.Range(0f, _spawnRange);
-        enemy.StateUpdate(new Vector2(spawnPositionX, spawnPositionY));
-        enemy.gameObject.SetActive(true);
-    }
-    private void ReturnEnemy(Enemy enemy)
-    {
-        enemy.gameObject.SetActive(false);
-        _enemyCounter--;
-    }
-    private void RandomizeEnemy(Enemy enemy)
-    {
-        //Enemy enemy = enemyGO.GetComponent<Enemy>();
-        int formNumber = UnityEngine.Random.Range(0, _enemyFormSpawnActions.Count);
-        int colorNumber = UnityEngine.Random.Range(0, _enemyColorSpawnActions.Count);
-        enemy.directionSetter = _enemyFormSpawnActions[formNumber]?.Invoke();
-        enemy.hitSetter = _enemyColorSpawnActions[colorNumber]?.Invoke();
-        enemy.gameObject.GetComponent<SpriteRenderer>().sprite = _enemySprites[formNumber];
-        enemy.gameObject.GetComponent<SpriteRenderer>().color = _enemyColors[colorNumber];
-        enemy.moveData = _moveData[formNumber];
-        enemy.hitData = _hitData[colorNumber];
-    }
     private Transform RandomizeSpawnPoint()
     {
         GameObject spawnPoint = _spawnPoint[UnityEngine.Random.Range(0, _spawnPoint.Length)];
         return spawnPoint.transform;
-    }
-    private IEnemyDirectionSetter CubeSpawn()
-    {
-        return new CubeDirectionSetter();
-    }
-    private IEnemyDirectionSetter RhombusSpawn()
-    {
-        return new RhombusDirectionSetter();
-    }
-    private IEnemyDirectionSetter TriangleSpawn()
-    {
-        return new TriangleDirectionSetter();
-    }
-    private IEnemyHitSetter RedSpawn()
-    {
-        return new RedHitSetter();
-    }
-    private IEnemyHitSetter YellowSpawn()
-    {
-        return new YellowHitSetter();
     }
 }

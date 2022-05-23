@@ -212,7 +212,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bdcb7de2e475b0944bae3e63da483836, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxPlayerHealth: 100
+  _player: {fileID: 272936991}
 --- !u!1 &37065671
 GameObject:
   m_ObjectHideFlags: 0
@@ -1420,8 +1420,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2073644600}
-  - component: {fileID: 2073644599}
   - component: {fileID: 2073644601}
+  - component: {fileID: 2073644599}
+  - component: {fileID: 2073644603}
+  - component: {fileID: 2073644602}
   m_Layer: 0
   m_Name: SpawnPoint
   m_TagString: Untagged
@@ -1444,30 +1446,12 @@ MonoBehaviour:
   _maxEnemy: 5
   _spawnTime: 1.5
   _spawnRange: 5
-  _enemyPrefab: {fileID: 1658997047562053772, guid: 31c855061e58efd41bce08c9cb7b94c2, type: 3}
-  _player: {fileID: 272936991}
-  _bulletPool: {fileID: 1422919507}
   _enemyDiedSound: {fileID: 2079057786}
-  _enemyShotSound: {fileID: 556667876}
   _spawnPoint:
   - {fileID: 4869402583439940230}
   - {fileID: 701060662}
   - {fileID: 1111191481}
   - {fileID: 1563840196}
-  _enemyColors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 1, g: 0.9802982, b: 0, a: 1}
-  _enemySprites:
-  - {fileID: 21300000, guid: bde8efc684abb2f4ca9158ee5ca0c75a, type: 3}
-  - {fileID: 21300000, guid: 6d0d6d9a88fd87a439cb54745d8e88cf, type: 3}
-  - {fileID: 21300000, guid: 2711300d18876c140b822910747a0865, type: 3}
-  _moveData:
-  - {fileID: 11400000, guid: 6e200939ccbe3fe4d8ebdec0a9b5a486, type: 2}
-  - {fileID: 11400000, guid: cb44413e49fbd594290be04d3ad4d728, type: 2}
-  - {fileID: 11400000, guid: 16855d4a4fa0735468caaa298f3c02ac, type: 2}
-  _hitData:
-  - {fileID: 11400000, guid: 127183e2aff1475488226313f9942d18, type: 2}
-  - {fileID: 11400000, guid: 2ce22265bccdfb54cb06d78e8370564f, type: 2}
 --- !u!4 &2073644600
 Transform:
   m_ObjectHideFlags: 0
@@ -1583,6 +1567,48 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2073644602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2073644598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04f92981d19c98644995bdf8251ca69e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _enemyPrefab: {fileID: 1658997047562053772, guid: 31c855061e58efd41bce08c9cb7b94c2, type: 3}
+--- !u!114 &2073644603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2073644598}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a67b6735d6c0ad46bdad68f7d74a6df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _player: {fileID: 272936991}
+  _bulletPool: {fileID: 1422919507}
+  _enemyShotSound: {fileID: 556667876}
+  _moveData:
+  - {fileID: 11400000, guid: 6e200939ccbe3fe4d8ebdec0a9b5a486, type: 2}
+  - {fileID: 11400000, guid: cb44413e49fbd594290be04d3ad4d728, type: 2}
+  - {fileID: 11400000, guid: 16855d4a4fa0735468caaa298f3c02ac, type: 2}
+  _hitData:
+  - {fileID: 11400000, guid: 127183e2aff1475488226313f9942d18, type: 2}
+  - {fileID: 11400000, guid: 2ce22265bccdfb54cb06d78e8370564f, type: 2}
+  _enemyColors:
+  - {r: 1, g: 0, b: 0, a: 1}
+  - {r: 1, g: 0.9677757, b: 0, a: 1}
+  _enemySprites:
+  - {fileID: 21300000, guid: bde8efc684abb2f4ca9158ee5ca0c75a, type: 3}
+  - {fileID: 21300000, guid: 6d0d6d9a88fd87a439cb54745d8e88cf, type: 3}
+  - {fileID: 21300000, guid: 2711300d18876c140b822910747a0865, type: 3}
 --- !u!1 &2079057784
 GameObject:
   m_ObjectHideFlags: 0

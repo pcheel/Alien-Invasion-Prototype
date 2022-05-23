@@ -55,6 +55,8 @@ public class Enemy : MonoBehaviour
     {
         if (_timeFromLastShot >= _hitData._shotDelay && _hitData._shotDelay > 0f)
         {
+            if (_enemyBulletPool == null){ Debug.Log("bul");}
+            if (_hitData == null){ Debug.Log("hit");}
             _hitSetter.Hit(_enemyBulletPool, transform.position, _hitData);
             _timeFromLastShot = 0f;
             _enemyShotSound.Play();
