@@ -19,14 +19,20 @@ public class Enemy : MonoBehaviour
     private IEnemyDirectionSetter _directionSetter;
     private IEnemyHitSetter _hitSetter;
 
+    //public EnemyHitData hitData () => _hitData;
     public Player player { set => _player = value;}
     public AudioSource enemyShotSound { set => _enemyShotSound = value;}
     public ObjectPool<Enemy> enemyPool{set => _enemyPool = value; }
     public ObjectPool<Bullet> bulletPool{set => _enemyBulletPool = value; }
-    public EnemyHitData hitData{set => _hitData = value; }
+    //public EnemyHitData hitData{set => _hitData = value; }
     public EnemyMoveData moveData{set => _moveData = value; }
     public IEnemyDirectionSetter directionSetter{set => _directionSetter = value;}
     public IEnemyHitSetter hitSetter{set => _hitSetter = value;}
+    public EnemyHitData hitData
+    {
+        get => _hitData;
+        set => _hitData = value; 
+    }
 
     public void StateUpdate(Vector2 position)
     {
@@ -55,8 +61,6 @@ public class Enemy : MonoBehaviour
     {
         if (_timeFromLastShot >= _hitData._shotDelay && _hitData._shotDelay > 0f)
         {
-            if (_enemyBulletPool == null){ Debug.Log("bul");}
-            if (_hitData == null){ Debug.Log("hit");}
             _hitSetter.Hit(_enemyBulletPool, transform.position, _hitData);
             _timeFromLastShot = 0f;
             _enemyShotSound.Play();
@@ -73,14 +77,9 @@ public class Enemy : MonoBehaviour
         if (bullet != null)
         {
             ApplyDamage(bullet.damage);
-            if (bullet.gameObject.activeInHierarchy)
-            {
-                bullet.bulletPool.Release(bullet);
-            }
         }
         else if(player != null)
         {
-            EventManager.SendPlayerDamageApplied(_hitData._collisionDamage);
             Die();
         }
     }

@@ -35,4 +35,16 @@ public class Bullet : MonoBehaviour
         _position += _direction * _speed * Time.deltaTime;
         transform.position = _position;
     }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Enemy _enemy = collision.gameObject.GetComponent<Enemy>();
+        Player _player = collision.gameObject.GetComponent<Player>();
+        if (_enemy != null || _player != null)
+        {
+            if (this.gameObject.activeInHierarchy)
+            {
+                bulletPool.Release(this);
+            }
+        }
+    }
 }

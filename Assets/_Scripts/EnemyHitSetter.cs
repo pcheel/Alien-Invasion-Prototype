@@ -22,7 +22,7 @@ public class YellowHitSetter : IEnemyHitSetter
             float angle = 2 * Mathf.PI * i / n;
             Vector2 shotDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
             Bullet bullet = bulletPool.Get();
-            bullet.StateUpdate(shotDirection, position, hitData._bulletSpeed, hitData._bulletDamage);
+            bullet.StateUpdate(shotDirection, position, hitData._bulletData._bulletSpeed, hitData._bulletData._bulletDamage);
         }
     }
 }

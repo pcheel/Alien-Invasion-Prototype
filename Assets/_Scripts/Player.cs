@@ -59,18 +59,21 @@ public class Player : MonoBehaviour
             {
                 _shotSound.Play();
                 Bullet bullet = _playerBulletPool.Get();
-                bullet.StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage);
-                //bullet.GetComponent<Bullet>().StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage); 
+                bullet.StateUpdate(direction, transform.position, _bulletSpeed, _bulletDamage); 
             }
         }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         Bullet _bullet = collision.gameObject.GetComponent<Bullet>();
+        Enemy _enemy = collision.gameObject.GetComponent<Enemy>();
         if (_bullet != null)
         {
             EventManager.SendPlayerDamageApplied(_bullet.damage);
-            _bullet.bulletPool.Release(_bullet);
+        }
+        else if (_enemy != null)
+        {
+            EventManager.SendPlayerDamageApplied(_enemy.hitData._collisionDamage);
         }
     }
 }

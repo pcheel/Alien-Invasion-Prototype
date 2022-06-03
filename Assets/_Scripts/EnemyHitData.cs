@@ -6,8 +6,7 @@ using UnityEngine;
 public class EnemyHitData : ScriptableObject
 {
     public int _collisionDamage;
-    public int _bulletDamage;
     public int _hitScore;
-    public float _bulletSpeed;
     public float _shotDelay;
+    public BulletData _bulletData;
 }
