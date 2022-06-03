@@ -5,9 +5,11 @@ using UnityEngine.SceneManagement;
 
 public class GameEnd : MonoBehaviour
 {
-    private void Awake()
+    [SerializeField] Player _player;
+
+    private void Start()
     {
-        EventManager.OnGameEnded.AddListener(EndGame);
+        _player.OnPlayerDied.AddListener(EndGame);
     }
     private void EndGame()
     {

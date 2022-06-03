@@ -1,21 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class ScoreCounter : MonoBehaviour
 {
-    private Text _text;
     private int _score = 0;
-    
-    private void Awake()
-    {
-        _text = GetComponent<Text>();
-        EventManager.OnScoreChanged.AddListener(ChangeScore);
-    }
-    private void ChangeScore(int score)
+
+    public UnityEvent<int> OnScoreChanged = new UnityEvent<int>();
+
+    public void ChangeScore(int score)
     {
         _score += score;
-        _text.text = "Score: " + _score;
+        OnScoreChanged?.Invoke(_score);
     }
 }

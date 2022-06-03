@@ -11,10 +11,13 @@ public class HealthBar : MonoBehaviour
     private void Awake()
     {
         _image = GetComponent<Image>();
-        EventManager.OnPlayerHealthChanged.AddListener(ChangeHealthBar);
     }
-    public void ChangeHealthBar(int damage)
+    private void Start()
     {
-        _image.fillAmount -= (float)damage/_player.maxHealth;
+        _player.OnPlayerHealthChanged.AddListener(ChangeHealthBar);
+    }
+    private void ChangeHealthBar(int currentHealth)
+    {
+        _image.fillAmount = (float)currentHealth/_player.maxHealth;
     }
 }

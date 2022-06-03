@@ -24,9 +24,10 @@ public class EnemySpawner : MonoBehaviour
     }
     private void Start()
     {
-        EventManager.OnEnemyDied.AddListener(() => _enemyDiedSound.Play());
-        EventManager.OnEnemyDied.AddListener(() => _enemyCounter--);
-        _enemyPool = GetComponent<EnemyPool>().enemyPool;
+        EnemyPool enemyPool = GetComponent<EnemyPool>();
+        _enemyPool = enemyPool.enemyPool;
+        enemyPool.OnEnemyDied.AddListener(() => _enemyCounter--);
+        enemyPool.OnEnemyDied.AddListener(() => _enemyDiedSound.Play());
     }
     private void Update()
     {

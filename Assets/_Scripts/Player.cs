@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Events;
 
 public class Player : MonoBehaviour
 {
@@ -12,20 +13,23 @@ public class Player : MonoBehaviour
     [SerializeField] private BulletPool _bulletPool;
     [SerializeField] private AudioSource _shotSound;
     private ObjectPool<Bullet> _playerBulletPool;
-    private float _currentHealth;
+    private int _currentHealth;
 
+    public UnityEvent<int> OnPlayerHealthChanged = new UnityEvent<int>();
+    public UnityEvent OnPlayerDied = new UnityEvent();
     public int maxHealth => _maxHealth;
     public void ApplyDamage(int damage)
     {
         if (_currentHealth <= damage)
         {
             _currentHealth = 0;
-            EventManager.SendGameEnded();
+            OnPlayerDied?.Invoke();
         }
         else
         {
             _currentHealth -= damage;
         }
+        OnPlayerHealthChanged?.Invoke(_currentHealth);
     }
     private void Awake()
     {
@@ -34,7 +38,6 @@ public class Player : MonoBehaviour
     private void Start()
     {
         _playerBulletPool = _bulletPool.playerBulletPool;
-        EventManager.OnPlayerHealthChanged.AddListener(ApplyDamage);
     }
     private void Update()
     {
@@ -69,11 +72,11 @@ public class Player : MonoBehaviour
         Enemy _enemy = collision.gameObject.GetComponent<Enemy>();
         if (_bullet != null)
         {
-            EventManager.SendPlayerDamageApplied(_bullet.damage);
+            ApplyDamage(_bullet.damage);
         }
         else if (_enemy != null)
         {
-            EventManager.SendPlayerDamageApplied(_enemy.hitData._collisionDamage);
+            ApplyDamage(_enemy.hitData._collisionDamage);
         }
     }
 }

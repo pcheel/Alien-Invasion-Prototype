@@ -1,46 +1,38 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System;
+using UnityEngine;
 using UnityEngine.Pool;
 
 public class Enemy : MonoBehaviour
 {
     private int _currentHealth;
-    private int _score;
     private float _timeFromLastShot = 0f;
     private Vector3 _position;
     private Player _player;
     private ObjectPool<Enemy> _enemyPool;
     private ObjectPool<Bullet> _enemyBulletPool;
     private AudioSource _enemyShotSound;
-    private EnemyMoveData _moveData;
-    private EnemyHitData _hitData;
     private IEnemyDirectionSetter _directionSetter;
     private IEnemyHitSetter _hitSetter;
 
-    //public EnemyHitData hitData () => _hitData;
     public Player player { set => _player = value;}
     public AudioSource enemyShotSound { set => _enemyShotSound = value;}
     public ObjectPool<Enemy> enemyPool{set => _enemyPool = value; }
     public ObjectPool<Bullet> bulletPool{set => _enemyBulletPool = value; }
-    //public EnemyHitData hitData{set => _hitData = value; }
-    public EnemyMoveData moveData{set => _moveData = value; }
     public IEnemyDirectionSetter directionSetter{set => _directionSetter = value;}
     public IEnemyHitSetter hitSetter{set => _hitSetter = value;}
-    public EnemyHitData hitData
-    {
-        get => _hitData;
-        set => _hitData = value; 
-    }
+
+    public EnemyMoveData moveData;
+    public EnemyHitData hitData;
 
     public void StateUpdate(Vector2 position)
     {
-        _currentHealth = _moveData._maxHealth;
+        _currentHealth = moveData._maxHealth;
         _position = position;
         transform.position = position;
-        CalculateScore();
     }
+
     private void Awake()
     {
         _position = transform.position;
@@ -54,14 +46,14 @@ public class Enemy : MonoBehaviour
     {
         Vector3 direction = _directionSetter.GetDirection(_position, _player.transform.position);
         direction = Vector3.ClampMagnitude(direction, 1);
-        _position += direction * _moveData._speed * Time.deltaTime;
+        _position += direction * moveData._speed * Time.deltaTime;
         transform.position = _position;
     }
     private void Hit()
     {
-        if (_timeFromLastShot >= _hitData._shotDelay && _hitData._shotDelay > 0f)
+        if (_timeFromLastShot >= hitData._shotDelay && hitData._shotDelay > 0f)
         {
-            _hitSetter.Hit(_enemyBulletPool, transform.position, _hitData);
+            _hitSetter.Hit(_enemyBulletPool, transform.position, hitData);
             _timeFromLastShot = 0f;
             _enemyShotSound.Play();
         }
@@ -97,10 +89,5 @@ public class Enemy : MonoBehaviour
     private void Die()
     {
         _enemyPool.Release(this);
-        EventManager.SendEnemyDied(_score);
-    }
-    private void CalculateScore()
-    {
-        _score = _hitData._hitScore + _moveData._moveScore;
     }
 }
